@@ -10,6 +10,8 @@
 
 #include <vector>
 #include <iostream>
+using std::cout;
+using std::cin;
 
 #include "Edge.hpp"
 using std::vector;
@@ -35,7 +37,8 @@ public:
 		edges = v.edges;//improve may be a better way to do this
 	}
 	virtual ~Vertex(){
-
+		/*cout<<"Vertex destructor";
+		cin.get();*/
 	}
 
 	void setValue(T t){

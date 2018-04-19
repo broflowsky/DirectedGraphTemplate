@@ -42,23 +42,31 @@ public:
 			cerr<<"Copy constructor: "<<e.what();
 		}
 	}
-	virtual ~DirectedGraph(){
-		delete base;
+	 ~DirectedGraph(){
+
+		if(!clean())
+			cerr<<"\nProblem in clean()";
 	}
 
 
-	virtual Edge<T>& link( Vertex<T>& start,  Vertex<T>& end){
-		Edge<T>* newEdge = new Edge<T>(0,&start,&end);// 0 is int weight
-		newEdge->setStart(&start);
-		newEdge->setEnd(&end);
+	 Edge<T>& link( Vertex<T>& start,  Vertex<T>& end){
+		try{
+			Edge<T>* newEdge = new Edge<T>(0,&start,&end);// 0 is int weight
+			newEdge->setStart(&start);
+			newEdge->setEnd(&end);
 
-		start.add(*newEdge);
-		end.add(*newEdge);
-		return *newEdge;
+			start.add(*newEdge);
+			end.add(*newEdge);
+			return *newEdge;
+		}
+		catch(exception& e){
+			cerr<<"\nlink"<<e.what();
+			exit(3);
+		}
 	}
 
 	//adds one vertex; returns bool if added successfully.
-	virtual bool add(Vertex<T>& v){
+	 bool add(Vertex<T>& v){
 		try{
 			if(base == nullptr){
 				base = &v;
@@ -79,9 +87,11 @@ public:
 	}
 
 	//adds an edge; returns true if the edge is added successfully.
-	virtual bool add(Edge<T>& e){
+	 bool add(Edge<T>& e){
 		try{
+
 			edges.push_back(e);
+
 		}
 		catch(exception& e){
 			cerr<<e.what();
@@ -92,7 +102,7 @@ public:
 
 	//Bonus question: adds in a set of vertices; returns bool if added
 	 //successfully
-	virtual bool add(Vertex<T>* v, int size){
+	 bool add(Vertex<T>* v, int size){
 		try{
 			if(!size)
 				throw invalid_argument("Invalid Size");
@@ -110,7 +120,7 @@ public:
 
 	//Bonus question: removes a set of edges; as a result, some nodes may remain
 	//as orphan.
-	virtual bool add(Edge<T>* e,int size){
+	 bool add(Edge<T>* e,int size){
 		try{
 			if(!size)
 				throw invalid_argument("Invalid Size");
@@ -128,7 +138,7 @@ public:
 
 	//removes a vertex; the edges that have connection with this vertex need to
 	 //be removed;
-	virtual bool remove(Vertex<T>& v){
+	 bool remove(Vertex<T>& v){
 		/*try{
 			vertices.remove(v);
 		}
@@ -142,7 +152,7 @@ public:
 	}
 
 	// remove the edge
-	virtual bool remove(Edge<T>& e){
+	 bool remove(Edge<T>& e){
 		/*try{
 			edges.remove(e);
 			return true;
@@ -157,7 +167,7 @@ public:
 	// returns bool if a vertex exists in a graph.
 
 
-	virtual Vertex<T>& searchVertex(T value){
+	 Vertex<T>& search(T value){
 
 
 		for(typename list<Vertex<T>>::iterator it = vertices.begin(); it != vertices.end(); ++it)
@@ -168,7 +178,7 @@ public:
 		throw Null_vertex("\nVertex not found");
 	}
 
-	virtual Edge<T>& searchEdge(int id){
+	 Edge<T>& searchEdge(int id){
 
 		for(typename list<Edge<T>>::iterator it = edges.begin(); it != edges.end(); ++it)
 			if(it->getId() == id ){
@@ -239,7 +249,7 @@ public:
 		for(auto v : vertices)
 			cout<<"\n"<<v;
 	}
-	virtual void display(Vertex<T>& v) const{
+	 void display(Vertex<T>& v) const{
 		//finds the shortest path to vertex
 		bool* visited = nullptr;
 		do{
@@ -271,7 +281,7 @@ public:
 	}
 
 	// displays the path that contains the edge.
-	virtual void display(Edge<T>& e) const{
+	 void display(Edge<T>& e) const{
 		//output format
 		//prints the series of vertices from the base vertex to the vertex that Edge e points to
 		bool* visited = new bool[vertices.size()+1];
@@ -296,12 +306,12 @@ public:
 	}
 
 	// displays the whole graph with your own defined format
-	virtual void display() const{
+	 void display() const{
 		cout<<toString();
 	}
 	 // converts the whole graph to a string such as 1-2-4-5; 1-3-5; each path
 	 // is separated by ';'
-	virtual string toString()const{
+	 string toString()const{
 		try{
 
 			stringstream buffer;
@@ -341,13 +351,12 @@ public:
 				}
 				if(!path.empty())
 					for(auto r_it = path.rbegin(); r_it != path.rend();++r_it){
-						buffer << r_it->getId();
-						if(r_it->getId() == it.getId()){
-							buffer << ';';
-							buffer << '\n';
-							buffer << '\t';
-						}
-						else buffer << '-';
+						buffer << r_it->getValue();
+						if(r_it->getId() == it.getId())
+							buffer << ';'<<'\n'<<'\t';
+
+						else buffer <<'-'<<'>';
+
 					}
 				delete visited;
 			}
@@ -366,15 +375,28 @@ public:
 
 	}
 	//remove all the vertices and edges;
-	virtual bool clean(){
+	 bool clean(){
 		try{
+
+
+
 			vertices.clear();
+
+
+
 			edges.clear();
+
+
+
 			delete base;
 			base = nullptr;
+
 			return true;
 		}catch(exception& e){
 			cerr<<'\n'<<e.what();
+			return false;
+		}catch(...){
+			cerr<<"\nUnhandled in clean!";
 			return false;
 		}
 	}
@@ -398,8 +420,12 @@ public:
 	friend std::ostream& operator<<<T>(std::ostream&, const DirectedGraph<T>&);
 
 };
-template<class T> std::ostream& operator<<(std::ostream& o, const DirectedGraph<T>& g){
-	o << "to do";
-	return o;
+template<class T> std::ostream& operator<<(std::ostream& out, const DirectedGraph<T>& g){
+	out << "\n##############################################"
+		<< "\nGraph contains "<< g.vertices.size() <<" vertices and " << g.edges.size() << " edges."
+		<< g.toString()
+		<< "\n##############################################";
+
+	return out;
 }
 #endif /* DIRECTEDGRAPH_HPP_ */

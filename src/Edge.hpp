@@ -38,8 +38,8 @@ public:
 		vertexEnd=e.vertexEnd;
 	}
 	virtual ~Edge(){
-		delete[] vertexEnd;
-		delete[] vertexStart;
+		//delete vertexEnd;  /* Crashes here if uncommented*/
+		//delete vertexStart;
 	}
 
 	void setWeight(int w){
