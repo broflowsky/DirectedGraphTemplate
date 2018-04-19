@@ -205,25 +205,13 @@ public:
 		{
 			visited[v.getId() - base->getId()]=true;//setting the vertex as visited
 
-			/*for(auto it = v.getListEdge().begin(); it != v.getListEdge().end(); ++it)//NOTE i have no idea what it type is!!
-			{//iterating through all edges of vertex v
-
-				if( *(it->getEnd()) == v && !visited[ *it->getStart()->getId() - base->getId())
-				{//testing if iterator is directed toward Vertex v
-					//add vertex to path
-					buffer.push_back(v);
-
-					//recursive call
-					//testing if the vertex on the other hand of iterator is part of path
-					findPath(*it->,buffer,visited);
-				}
-			}*/
-			for(auto it : v.getListEdge())//NOTE i have no idea what it type is!!
+			for(auto it : v.getListEdge())//NOTE i have no idea what "it" type is!!
 			{//iterating through all edges of vertex v
 
 				if( *(it->getEnd()) == v && !visited[ it->getStart()->getId() - base->getId()])
 				{//testing if iterator is directed toward Vertex v
 					//add vertex to path
+
 					buffer.push_back(v);
 
 					//recursive call
@@ -231,9 +219,12 @@ public:
 					findPath(*it->getStart(),buffer,visited);
 				}
 			}
-			if(!buffer.empty())//means path does not lead back to base
+			if(!buffer.empty())
+			{//means path does not lead back to base
 				if(buffer.back() != *base)
 					buffer.pop_back();
+				else buffer.push_back(buffer[0]);
+			}
 		}
 		visited[v.getId() - base->getId()] = false;//freeing vertex
 
@@ -249,7 +240,7 @@ public:
 		for(auto v : vertices)
 			cout<<"\n"<<v;
 	}
-	 void display(Vertex<T>& v) const{
+	 void display(Vertex<T>& v,bool debug = false) const{
 		//finds the shortest path to vertex
 		bool* visited = nullptr;
 		do{
@@ -275,8 +266,15 @@ public:
 			cout<<"\nNo path leading to vertex "<<v.getId()<<".";
 		else{
 			cout<<'\n';
-			for(auto it = path.rbegin(); it != path.rend(); ++it)
-				cout<<it->getId()<<(it->getId()==v.getId()?';':'-');
+			if(debug)
+				for(auto debug: path)
+					cout<<'\n'<<debug;
+			for(auto it = path.rbegin(); it != path.rend(); ++it){
+				cout<<it->getValue();
+				it->getValue()==v.getValue()?cout<<';'<<'\n':cout<<'-'<<'>';
+			}
+
+
 		}
 	}
 

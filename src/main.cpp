@@ -40,18 +40,19 @@ int main() {
 		test.add(test.link(test.search("system"),test.search("ios")));
 		test.add(test.link(test.search("system"),test.search("file")));
 		test.add(test.link(test.search("runtime"),test.search("overflow")));
-		test.add(test.link(test.search("runtime"),test.search("range")));
+
 		test.add(test.link(test.search("exception"),test.search("bad_cast")));
 		test.add(test.link(test.search("file"),test.search("overflow")));
 		test.add(test.link(test.search("overflow"),test.search("range")));
+		test.add(test.link(test.search("runtime"),test.search("range")));
 
 
-		cout<<'\n'<<test;
+		test.display(test.search("range"));
 
 
 
 
-cin.get();
+
 /*		In DirectedGraph destructor when the edges are destroyed, the edge destructor crashes the program*/
 
 
