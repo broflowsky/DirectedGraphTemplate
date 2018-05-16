@@ -33,10 +33,8 @@ public:
 		this->base = base;
 	}
 	DirectedGraph(const DirectedGraph<T>&g){
-		base = g.base;
 		try{
-			vertices.insert(vertices.end(), g.vertices.begin(), g.vertices.end());
-			edges.insert(edges.end(), g.edges.begin(),g.edges.end());
+			*this= g;
 		}
 		catch(exception &e){
 			cerr<<"Copy constructor: "<<e.what();
@@ -104,7 +102,7 @@ public:
 	 //successfully
 	 bool add(Vertex<T>* v, int size){
 		try{
-			if(!size)
+			if(size<1)
 				throw invalid_argument("Invalid Size");
 
 			for(int i =0 ; i < size; ++i)
@@ -122,7 +120,7 @@ public:
 	//as orphan.
 	 bool add(Edge<T>* e,int size){
 		try{
-			if(!size)
+			if(size<1)
 				throw invalid_argument("Invalid Size");
 			for(int i =0 ; i < size; ++i)
 				edges.push_back(e[i]);
@@ -140,7 +138,7 @@ public:
 	 //be removed;
 	 bool remove(Vertex<T>& v){
 		/*try{
-			vertices.remove(v);
+			vertices.remove(v);//TODO
 		}
 		catch(exception& e){
 			cerr<<"remove(Vertex&) "<<e.what();
@@ -153,7 +151,7 @@ public:
 
 	// remove the edge
 	 bool remove(Edge<T>& e){
-		/*try{
+		/*try{//TODO
 			edges.remove(e);
 			return true;
 		}
@@ -192,42 +190,41 @@ public:
 		try{
 			if(base == nullptr)
 				throw Null_vertex("invalid base vertex!");
+			if(v == *base)//checking if we reached base
+				buffer.push_back(*base);//add base to path
 
-		}catch(exception&e){
+			else if(!visited[v.getId() - base->getId()])//checking if we ve been here before
+			{
+				visited[v.getId() - base->getId()]=true;//setting the vertex as visited
+
+				for(auto it : v.getListEdge())//NOTE i have no idea what type "it"  is!!
+				{//iterating through all edges of vertex v
+
+					if( *(it->getEnd()) == v && !visited[ it->getStart()->getId() - base->getId()])
+					{//testing if iterator is directed toward Vertex v
+						//add vertex to path
+						buffer.push_back(v);
+						//recursive call
+						//testing if the vertex on the other hand of iterator is part of path
+						findPath(*it->getStart(),buffer,visited);
+					}
+				}
+				if(!buffer.empty())
+				{
+					if(buffer.back() != *base)//means path does not lead back to base
+						buffer.pop_back();
+
+					else
+						buffer.push_back(buffer[0]);//add destination for next path
+				}
+			}
+			visited[v.getId() - base->getId()] = false;//freeing vertex
+		}
+		catch(exception&e)
+		{
 			cerr<<e.what();
 			throw e;
 		}
-
-		if(v == *base)//checking if we reached base
-			buffer.push_back(*base);//add base to path
-
-		else if(!visited[v.getId() - base->getId()])//checking if we ve been here before
-		{
-			visited[v.getId() - base->getId()]=true;//setting the vertex as visited
-
-			for(auto it : v.getListEdge())//NOTE i have no idea what "it" type is!!
-			{//iterating through all edges of vertex v
-
-				if( *(it->getEnd()) == v && !visited[ it->getStart()->getId() - base->getId()])
-				{//testing if iterator is directed toward Vertex v
-					//add vertex to path
-
-					buffer.push_back(v);
-
-					//recursive call
-					//testing if the vertex on the other hand of iterator is part of path
-					findPath(*it->getStart(),buffer,visited);
-				}
-			}
-			if(!buffer.empty())
-			{//means path does not lead back to base
-				if(buffer.back() != *base)
-					buffer.pop_back();
-				else buffer.push_back(buffer[0]);
-			}
-		}
-		visited[v.getId() - base->getId()] = false;//freeing vertex
-
 	}
 	// displays the path that contains the vertex.
 
@@ -243,6 +240,8 @@ public:
 	 void display(Vertex<T>& v,bool debug = false) const{
 		//finds the shortest path to vertex
 		bool* visited = nullptr;
+		stringstream tempStream;
+
 		do{
 			try{
 				visited = new bool[vertices.size()];
@@ -263,19 +262,23 @@ public:
 		findPath(v,path,visited);
 
 		if(path.empty())
-			cout<<"\nNo path leading to vertex "<<v.getId()<<".";
+			tempStream<<"\nNo path leading to vertex "<<v.getValue()<<".";
 		else{
-			cout<<'\n';
 			if(debug)
 				for(auto debug: path)
-					cout<<'\n'<<debug;
+					tempStream<<'\n'<<debug;
+			tempStream<<'\n';
 			for(auto it = path.rbegin(); it != path.rend(); ++it){
-				cout<<it->getValue();
-				it->getValue()==v.getValue()?cout<<';'<<'\n':cout<<'-'<<'>';
+				tempStream<<it->getValue();
+				it->getValue()==v.getValue() ?tempStream<<';'<<'\n':tempStream<<'-'<<'>';
+
+
+				tempStream.seekp(2,tempStream.end);
+				//if(tempStream.seekp(2,tempStream.end))
+				//	;
 			}
-
-
 		}
+		cout<<tempStream.str();
 	}
 
 	// displays the path that contains the edge.
@@ -317,14 +320,14 @@ public:
 			buffer <<"\nAll Graph Paths\n\nFormat:\tBase Vertex ID - intermediate vertices IDs - Destination Vertex ID;\n\n\t";
 
 			if(vertices.empty())
-				throw Null_vertex("listVertex is empty!");
+				throw Null_vertex("vertices is empty!");
 
 
-			for(auto it : vertices)
+			for(auto it : vertices)//for every vertex in the graph
 			{
 				bool* visited;
 
-				//try-catch new operator///
+
 				try{
 					visited = new bool[vertices.size()];
 				}
@@ -332,7 +335,6 @@ public:
 					cerr<<"bool\n"<<e.what();
 					throw bad_alloc();
 				}
-				///////////////////////////
 
 				vector<Vertex<T>> path;
 				try
@@ -375,17 +377,8 @@ public:
 	//remove all the vertices and edges;
 	 bool clean(){
 		try{
-
-
-
 			vertices.clear();
-
-
-
 			edges.clear();
-
-
-
 			delete base;
 			base = nullptr;
 
@@ -401,17 +394,85 @@ public:
 
 	//Operators
 	//=
-	/*DirectedGraph<T>& operator=(DirectedGraph<T> g); //cannot be made const
+	DirectedGraph<T>& operator=(DirectedGraph<T> g){
+
+		if(this != &g){//self assignment
+			clean();
+			vertices.assign(g.vertices.begin(),g.vertices.end());
+			edges.assign(g.edges.begin(),g.edges.end());
+			if(!base && !vertices.empty())
+				base = vertices.front();
+		}
+		return *this;
+	}
 	//==
-	bool operator==(const DirectedGraph<T> &graph)const;
+	bool operator==(const DirectedGraph<T> &g)const{
+		//need to check validity before dereferencing
+			if(base == nullptr){
+				cerr<<"this->base is null";
+				return false;
+			}
+
+			if(g.base == nullptr){
+				cerr<<"other.base is null";
+				return false;
+
+			}
+
+			if(*base == *g.base)
+			{
+				if(vertices.size() != g.vertices.size() || edges.size() != g.edges.size()){
+
+
+					return false;
+				}
+
+				else if(!vertices.empty() && !edges.empty())
+				{
+
+					auto v1 = vertices.begin(), v2 = g.vertices.begin();
+					auto e1 = edges.begin(), e2 = g.edges.begin();
+
+					do
+						if(*v1 != *v2){
+							//cerr<<*v1<<"\n\n\n"<<*v2<<"\n\n\n";
+							return false;
+						}
+					while(v1++ != vertices.end() && v2++ != g.vertices.end());
+
+					do
+						if(*e1 != *e2){
+
+							return false;
+						}
+					while(e1++ != edges.end() && e2++ != g.edges.end());
+				}
+			}
+			else {
+
+				return false;
+			}
+
+			return true;
+
+	}
 	//!=
-	bool operator!=(const DirectedGraph<T>&)const;
+	bool operator!=(const DirectedGraph<T> &g)const{
+		return!(*this==g);
+	}
 	//++g
-	DirectedGraph<T>& operator++();
+	DirectedGraph<T>& operator++(){//prefix
+		if(!edges.empty())
+			for(auto e : edges)
+				++e;
+		return *this;
+	}
 	//g++
-	DirectedGraph<T> operator++(int);
+	DirectedGraph<T> operator++(int){
+		return DirectedGraph<T>(++*this);
+	}
 	//+
-	DirectedGraph<T> operator+(DirectedGraph<T>&);
+	/*DirectedGraph<T> operator+(DirectedGraph<T>&);
 	//>
 	bool operator>(const DirectedGraph<T> &g)const;*/
 	//<<

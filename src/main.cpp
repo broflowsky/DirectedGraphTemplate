@@ -32,6 +32,7 @@ int main() {
 		test.add(*new Vertex<string>("file"));
 		test.add(*new Vertex<string>("ios"));
 		test.add(*new Vertex<string>("bad_cast"));
+		test.add(*new Vertex<string>("dummy"));
 
 
 		test.add(test.link(test.search("exception"),test.search("bad_alloc")));
@@ -44,10 +45,12 @@ int main() {
 		test.add(test.link(test.search("exception"),test.search("bad_cast")));
 		test.add(test.link(test.search("file"),test.search("overflow")));
 		test.add(test.link(test.search("overflow"),test.search("range")));
-		test.add(test.link(test.search("runtime"),test.search("range")));
+		test.add(test.link(test.search("range"),test.search("runtime")));
 
 
-		test.display(test.search("range"));
+		//test.display(test.search("runtime"));
+		cout<<test;
+
 
 
 
